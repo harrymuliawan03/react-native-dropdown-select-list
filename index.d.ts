@@ -11,7 +11,7 @@ export interface SelectListProps  {
     /**
     * Placeholder text that will be displayed in the select box
     */
-    placeholder?: string,
+    placeholder?: string | number,
 
     /**
     * Additional styles for select box
@@ -112,6 +112,14 @@ export interface SelectListProps  {
     *  Pass any JSX to this prop like Text, Image or Icon to show instead of close icon
     */
     closeicon?: JSX.Element,
+
+
+    // custom props
+    isSplitText?: boolean,
+    isOpen?:boolean,
+    onPressCustom?: () => void
+    handleScroll?: () => void
+    disabled?: boolean
 }
 
 
