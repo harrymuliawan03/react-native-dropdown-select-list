@@ -37,7 +37,12 @@ const SelectList: React.FC<SelectListProps> =  ({
         onSelect = () => {},
         save = 'key',
         dropdownShown = false,
-        fontFamily
+        fontFamily,
+        isSplitText,
+        isOpen,
+        onPressCustom,
+        handleScroll,
+        disabled
     }) => {
 
     const oldOption = React.useRef(null)
@@ -63,6 +68,15 @@ const SelectList: React.FC<SelectListProps> =  ({
         Animated.timing(animatedvalue,{
             toValue:0,
             duration:500,
+            useNativeDriver:false,
+            
+        }).start(() => setDropdown(false))
+    }
+    const customSlideup = () => {
+        
+        Animated.timing(animatedvalue,{
+            toValue:0,
+            duration:0,
             useNativeDriver:false,
             
         }).start(() => setDropdown(false))
@@ -105,15 +119,23 @@ const SelectList: React.FC<SelectListProps> =  ({
     },[defaultOption])
 
     React.useEffect(() => {
-        if(!_firstRender){
-            if(dropdownShown)
-                slidedown();
-            else
-                slideup();
-            
+        if(!disabled) {
+            if(!_firstRender){
+                if(dropdownShown)
+                    slidedown();
+                else
+                    slideup();
+                
+            }
         }
         
     },[dropdownShown])
+
+    React.useEffect(() => {
+        !isOpen && customSlideup() 
+    },[isOpen])
+
+
 
 
 
@@ -136,7 +158,11 @@ const SelectList: React.FC<SelectListProps> =  ({
                                 searchicon
                             }
                             
-                            <TextInput 
+                            <TextInput
+                                onFocus={handleScroll ? () => setTimeout(() => {
+                                    handleScroll() 
+                                }, 200)
+                                : undefined} 
                                 placeholder={searchPlaceholder}
                                 onChangeText={(val) => {
                                     let result =  data.filter((item: L1Keys) => {
@@ -169,7 +195,16 @@ const SelectList: React.FC<SelectListProps> =  ({
                         
                     </View>
                 :
-                    <TouchableOpacity style={[styles.wrapper,boxStyles]} onPress={() => { if(!dropdown){ Keyboard.dismiss(); slidedown() }else{ slideup() } }}>
+                    <TouchableOpacity style={[styles.wrapper,boxStyles]} onPress={() => { 
+                        if(disabled) {
+                            undefined
+                        }else{
+                            if(!dropdown){ 
+                                Keyboard.dismiss(); slidedown(), onPressCustom && onPressCustom() 
+                            }else{ 
+                                slideup() } 
+                        }
+                            }}>
                         <Text style={[{fontFamily},inputStyles]}>{ (selectedval == "") ? (placeholder) ? placeholder : 'Select option' : selectedval  }</Text>
                         {
                             (!arrowicon)
@@ -211,10 +246,10 @@ const SelectList: React.FC<SelectListProps> =  ({
                                                 if(save === 'value'){
                                                     setSelected(value);
                                                 }else{
-                                                    setSelected(key)
+                                                    setSelected(key, value)
                                                 }
                                                 
-                                                setSelectedVal(value)
+                                                setSelectedVal(value.length > 7 ? (isSplitText ? value.slice(0,7) + '..' : value) : value)
                                                 slideup()
                                                 setTimeout(() => {setFilteredData(data)}, 800)
                                                 
